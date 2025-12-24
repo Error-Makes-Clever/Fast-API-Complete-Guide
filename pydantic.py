@@ -1,5 +1,5 @@
-from pydantic import BaseModel, EmailStr, AnyUrl, Field, field_validator
-from typing import List, Dict, Optional, Annotated
+from pydantic import BaseModel, EmailStr, AnyUrl, Field, field_validator, model_validator, ValidationError
+from typing import List, Dict, Optional, Annotated, Any
 
 class Patient(BaseModel):
 
@@ -46,6 +46,24 @@ class Patient(BaseModel):
             return age
         else:   
             raise ValueError('Invalid age, must be between 0 and 100')
+        
+    @model_validator(mode= 'after')
+    def vaildate_emergency_contact(self):
+        if self.age < 18 and self.contact_details.get('emergency_contact') is None:
+            raise ValueError('Emergency contact is required for patients under 18 years of age')
+        return self
+
+    @model_validator(mode="wrap")
+    @classmethod
+    def audit_validation(cls, data: Any, handler):
+        try:
+            print("🔹 WRAP: before full validation")
+            return handler(data)   # ← run ALL field + model validators
+        except ValidationError as e:
+            print("❌ WRAP: validation failed")
+            print("Raw input:", data)
+            print("Errors:", e.errors())
+            raise
 
 def update_patient_data(patient : Patient):
     
