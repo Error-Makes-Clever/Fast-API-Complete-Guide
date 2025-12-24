@@ -1,25 +1,51 @@
-from pydantic import BaseModel, EmailStr, AnyUrl, Field
+from pydantic import BaseModel, EmailStr, AnyUrl, Field, field_validator
 from typing import List, Dict, Optional, Annotated
 
 class Patient(BaseModel):
 
     name : Annotated[str, Field(..., title= 'Name of the patient', description= 'Give the name of patient must have charcters between  3 to 50', min_length= 3, max_length= 50)]
-    
+
     email : EmailStr
     linkedin_Url : AnyUrl
 
-    age : Annotated[int, Field(..., description= 'Age of the patient', gt= 0, lt= 100)]
+    age : Annotated[int, Field(..., description= 'Age of the patient')]
 
     weight : Annotated[float, Field(..., description= 'Weight of the patient', gt= 0, lt= 500, strict= True)]
 
-    height : float
+    height : Annotated[float, Field(..., description= 'Height of the patient', gt= 0, lt= 500, strict= True)]
+
     bmi : float
 
     married : Annotated[bool, Field(False, description= 'Married or not')]
 
-    allergies :  Annotated[Optional[List[str]], Field(None, description= 'Allergies of the patient', min_items= 1, max_items= 5)]
+    allergies :  Annotated[Optional[List[str]], Field(None, description= 'Allergies of the patient')]
 
     contact_details : Dict[str, str]
+
+    @field_validator('email', mode= 'before')
+    @classmethod
+    def validate_email(cls, email):
+        
+        valid_domains = ['hdfc.com', 'icici.com']
+
+        domain = email.split('@')[1]
+        if domain not in valid_domains:
+            raise ValueError('Invalid domain, must be from hdfc.com or icici.com')
+
+        return email  
+    
+    @field_validator('name', mode= 'before')
+    @classmethod
+    def transform_name(cls, name):  
+        return name.title()
+    
+    @field_validator('age', mode= 'after')
+    @classmethod
+    def validate_age(cls, age):
+        if 0 < age < 100:
+            return age
+        else:   
+            raise ValueError('Invalid age, must be between 0 and 100')
 
 def update_patient_data(patient : Patient):
     
@@ -36,7 +62,7 @@ def update_patient_data(patient : Patient):
 
     return "Patient data inserted successfully" 
 
-patient_info = {'name' : "Sujil S", 'email' : 'abc@gmail.com', 'linkedin_Url' : 'http://linkedin.com/1323', "age" : 25, 'weight' : 75, 'height' : 175, 'bmi' : 25, 'contact_details' : {'phone' : '9876543210'} }
+patient_info = {'name' : "sujil S", 'email' : 'abc@hdfc.com', 'linkedin_Url' : 'http://linkedin.com/1323', "age" : '25', 'weight' : 75, 'height' : 175, 'bmi' : 25, 'contact_details' : {'phone' : '9876543210'} }
 
 patient_1 = Patient(**patient_info)
 
