@@ -1,29 +1,18 @@
-def insert_patient_data(patient_name : str, patient_age : int):
+from pydantic import BaseModel
 
-    if type(patient_name) == str and type(patient_age) == int:
-        if patient_age < 0:
-            raise ValueError("Age cannot be negative")
-        else:
-            print(patient_name)
-            print(patient_age)
+class Patient(BaseModel):
 
-            return "Patient data inserted successfully" 
-    else:
-        raise ValueError("Invalid input")
+    patient_name : str
+    patient_age : int
+
+def insert_patient_data(patient : Patient):
     
+    print(patient.patient_name)
+    print(patient.patient_age)
 
-def update_patient_data(patient_name : str, patient_age : int):
+    return "Patient data inserted successfully" 
 
-    if type(patient_name) != str and type(patient_age)!= int:
-        if patient_age < 0:
-            raise ValueError("Age cannot be negative")
-        else:
-            print(patient_name)
-            print(patient_age)
+patient_info = {'patient_name' : "Sujil S", "patient_age" : 25}
+patient_1 = Patient(**patient_info)
 
-            return "Patient data inserted successfully" 
-    else:
-        raise ValueError("Invalid input")
-
-insert_patient_data("John Doe", '30')
-insert_patient_data("Jane Doe", -1)
+insert_patient_data(patient_1)
