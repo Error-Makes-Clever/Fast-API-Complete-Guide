@@ -1,6 +1,12 @@
 from pydantic import BaseModel, EmailStr, AnyUrl, Field, field_validator, model_validator, ValidationError, computed_field
 from typing import List, Dict, Optional, Annotated, Any
 
+
+class Address(BaseModel):
+    city : str
+    state : str
+    pincode : int
+
 class Patient(BaseModel):
 
     name : Annotated[str, Field(..., title= 'Name of the patient', description= 'Give the name of patient must have charcters between  3 to 50', min_length= 3, max_length= 50)]
@@ -19,6 +25,8 @@ class Patient(BaseModel):
     allergies :  Annotated[Optional[List[str]], Field(None, description= 'Allergies of the patient')]
 
     contact_details : Dict[str, str]
+
+    Address : Optional[Address] = None
 
     @field_validator('email', mode= 'before')
     @classmethod
@@ -79,11 +87,20 @@ def update_patient_data(patient : Patient):
     print('BMI is :',patient.bmi)
     print(patient.married)
     print(patient.allergies)
-    print(patient.contact_details)
+    print(patient.contact_details)  
+    print(patient.Address)
+    print(patient.Address.city)
+    print(patient.Address.state)
+    print(patient.Address.pincode)
 
     return "Patient data inserted successfully" 
 
-patient_info = {'name' : "sujil S", 'email' : 'abc@hdfc.com', 'linkedin_Url' : 'http://linkedin.com/1323', "age" : '25', 'weight' : 75, 'height' : 175, 'bmi' : 25, 'contact_details' : {'phone' : '9876543210'} }
+address_info = {'city' : 'Bangalore', 'state' : 'Karnataka', 'pincode' : 560001}    
+
+address_1 = Address(**address_info)
+
+patient_info = {'name' : "sujil S", 'email' : 'abc@hdfc.com', 'linkedin_Url' : 'http://linkedin.com/1323', "age" : '25', 'weight' : 75, 'height' : 175, 'bmi' : 25, 'contact_details' : {'phone' : '9876543210'}, 'Address' : address_1 }
+
 
 patient_1 = Patient(**patient_info)
 
