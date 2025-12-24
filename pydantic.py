@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, AnyUrl, Field, field_validator, model_validator, ValidationError
+from pydantic import BaseModel, EmailStr, AnyUrl, Field, field_validator, model_validator, ValidationError, computed_field
 from typing import List, Dict, Optional, Annotated, Any
 
 class Patient(BaseModel):
@@ -13,8 +13,6 @@ class Patient(BaseModel):
     weight : Annotated[float, Field(..., description= 'Weight of the patient', gt= 0, lt= 500, strict= True)]
 
     height : Annotated[float, Field(..., description= 'Height of the patient', gt= 0, lt= 500, strict= True)]
-
-    bmi : float
 
     married : Annotated[bool, Field(False, description= 'Married or not')]
 
@@ -53,6 +51,11 @@ class Patient(BaseModel):
             raise ValueError('Emergency contact is required for patients under 18 years of age')
         return self
 
+    @computed_field
+    @property
+    def bmi(self) -> float:
+        return round(self.weight / (self.height/100)**2, 2)
+
     @model_validator(mode="wrap")
     @classmethod
     def audit_validation(cls, data: Any, handler):
@@ -73,7 +76,7 @@ def update_patient_data(patient : Patient):
     print(patient.age)
     print(patient.weight)
     print(patient.height)
-    print(patient.bmi)
+    print('BMI is :',patient.bmi)
     print(patient.married)
     print(patient.allergies)
     print(patient.contact_details)
