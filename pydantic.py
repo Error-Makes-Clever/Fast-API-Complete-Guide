@@ -14,6 +14,8 @@ class Patient(BaseModel):
     email : EmailStr
     linkedin_Url : AnyUrl
 
+    gender : Annotated[str, Field('Male', description= 'Gender of the patient')]
+
     age : Annotated[int, Field(..., description= 'Age of the patient')]
 
     weight : Annotated[float, Field(..., description= 'Weight of the patient', gt= 0, lt= 500, strict= True)]
@@ -26,7 +28,7 @@ class Patient(BaseModel):
 
     contact_details : Dict[str, str]
 
-    Address : Optional[Address] = None
+    Address : Optional[Address]
 
     @field_validator('email', mode= 'before')
     @classmethod
@@ -103,5 +105,25 @@ patient_info = {'name' : "sujil S", 'email' : 'abc@hdfc.com', 'linkedin_Url' : '
 
 
 patient_1 = Patient(**patient_info)
+
+temp = patient_1.model_dump()
+print(temp)
+print(type(temp))
+
+temp_json = patient_1.model_dump_json()
+print(temp_json)
+print(type(temp_json))
+
+temp_filtered = patient_1.model_dump(include= {'name', 'email', 'contact_details', 'Address'})
+print(temp_filtered)
+print(type(temp_filtered))
+
+temp_filtered_1 = patient_1.model_dump(exclude= {'Address' : ['city', 'state'], 'contact_details' : ['phone']})
+print(temp_filtered_1)
+print(type(temp_filtered_1))
+
+temp_filtered_2 = patient_1.model_dump(exclude_unset= True)
+print(temp_filtered_2)
+print(type(temp_filtered_2))    
 
 update_patient_data(patient_1)
