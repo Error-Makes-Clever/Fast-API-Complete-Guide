@@ -1,3 +1,10 @@
 fastapi
 uvicorn
 pydantic
+
+ipykernel
+scikit-learn
+numpy
+
+streamlit
+requests
