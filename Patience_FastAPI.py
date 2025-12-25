@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Path, HTTPException, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, computed_field
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Optional
 import json 
 
 app = FastAPI()
@@ -22,7 +22,7 @@ class Patient(BaseModel):
     name : Annotated[str, Field(..., description= "The name of the patient", example = 'John Doe')] 
     city : Annotated[str, Field(..., description= "The city of the patient", example = 'New York')]
     age : Annotated[int, Field(..., description= "The age of the patient", example = 30)]
-    gender : Annotated[Literal['Male', 'Female', 'Other'], Field(..., description= "The gender of the patient", example = 'Male')]
+    gender : Annotated[Literal['male', 'female', 'other'], Field(..., description= "The gender of the patient", example = 'male')]
     height : Annotated[float, Field(..., description= "The height of the patient (in meters)", example = 1.75)]
     weight : Annotated[float, Field(..., description= "The weight of the patient (in kgs)", example = 75.5)]
 
@@ -42,6 +42,16 @@ class Patient(BaseModel):
             return "Overweight"
         else:
             return "Obese"
+        
+
+class PatientUpdate(BaseModel):
+
+    name : Annotated[Optional[str], Field(None, description= "The name of the patient", example = 'John Doe')]
+    city : Annotated[Optional[str], Field(None, description= "The city of the patient", example = 'New York')]
+    age : Annotated[Optional[int], Field(None, description= "The age of the patient", example = 30)]
+    gender : Annotated[Optional[Literal['male', 'female', 'other']], Field(None, description= "The gender of the patient", example = 'male')]
+    height : Annotated[Optional[float], Field(None, description= "The height of the patient (in meters)", example = 1.75)]
+    weight : Annotated[Optional[float], Field(None, description= "The weight of the patient (in kgs)", example = 75.5)]
 
 @app.get("/")
 def hello():
@@ -95,3 +105,26 @@ def create_patient(patient : Patient):
     save_data(data)
 
     return JSONResponse(status_code= 201, content= {"message": "Patient created successfully"})
+
+@app.put('/update/{patient_id}')
+def update_patient(patient_id : str, patient : PatientUpdate):
+    data = load_data()
+
+    if patient_id not in data:
+        raise HTTPException(status_code= 404, detail= "Patient not found")
+    
+    existing_patient_info = data[patient_id]
+    updated_patient_info = patient.model_dump(exclude_unset= True)
+    
+    for field, value in updated_patient_info.items():    
+        existing_patient_info[field] = value
+
+    existing_patient_info['id'] = patient_id
+
+    patient_pydantic_info = Patient(**existing_patient_info)
+
+    data[patient_id] = patient_pydantic_info.model_dump(exclude= ['id'])
+
+    save_data(data)
+
+    return JSONResponse(status_code= 200, content= {"message": "Patient updated successfully"})
